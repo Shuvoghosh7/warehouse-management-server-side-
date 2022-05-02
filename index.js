@@ -30,7 +30,7 @@ async function run(){
         const id = req.params.id;
         const query={_id: ObjectId(id)};
         const product = await productCollection.findOne(query);
-        res.send(product);
+        res.send(product)
     });
 
 
