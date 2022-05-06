@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 const app = express()
@@ -18,6 +19,7 @@ async function run() {
     await client.connect();
     const productCollection = client.db('smartphoneWarehouse').collection('warehouse');
 
+    console.log('db connected')
     //load data form database
     app.get('/product', async (req, res) => {
       const query = {};
@@ -25,6 +27,12 @@ async function run() {
       const products = await cursor.toArray();
       res.send(products);
 
+      // jwt
+      app.post('/login',async(req,res)=>{
+        const email=req.body
+        var token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+        console.log(token)
+      })
       //load single product
       app.get('/product/:id', async (req, res) => {
         const id = req.params.id;
@@ -69,6 +77,8 @@ async function run() {
       const result = await productCollection.insertOne(newService)
       res.send(result)
     })
+      
+     
 
   }
   finally {
