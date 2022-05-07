@@ -21,6 +21,7 @@ async function run() {
   try {
     await client.connect();
     const productCollection = client.db('smartphoneWarehouse').collection('warehouse');
+    const myItemCollection = client.db('smartphoneWarehouse').collection('myItem');
 
     console.log('db connected')
     //load data form database
@@ -79,10 +80,23 @@ async function run() {
     // add item api
     app.post('/product', async (req, res) => {
       const newService = req.body
-      const result = await productCollection.insertOne(newService)
-      res.send(result)
+      const tokenAccess = req.headers.authorization;
+      console.log(tokenAccess)
+      const [email, tokeninfo] = tokenAccess.split(" ")
+      const decoded = checkToken(tokeninfo)
+      console.log(decoded)
+      if (email === decoded.email){
+        const result = await productCollection.insertOne(newService)
+        res.send({ success: 'products upload successfull' })
+      }
+      else{
+        res.send({success:'UnAuthorization Access'})
+      }
     })
+ // My item 
+    app.post('/myItem',async(req,res)=>{
 
+    })
 
 
   }
@@ -105,3 +119,18 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log('lising the port', port)
 })
+
+function checkToken(token) {
+  let email;
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+      if (err) {
+          email = 'This email is Invalid email'
+          console.log(email)
+      }
+      if (decoded) {
+          console.log(decoded)
+          email = decoded
+      }
+  });
+  return email;
+}
