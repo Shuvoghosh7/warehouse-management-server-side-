@@ -27,12 +27,7 @@ async function run() {
       const products = await cursor.toArray();
       res.send(products);
 
-      // jwt
-      app.post('/login',async(req,res)=>{
-        const email=req.body
-        var token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
-        console.log(token)
-      })
+     
       //load single product
       app.get('/product/:id', async (req, res) => {
         const id = req.params.id;
@@ -50,8 +45,7 @@ async function run() {
 
         const updateDoc = {
           $set: {
-            quantity: data.quantity
-
+            quantity: data.addQuantity 
           },
         };
 
@@ -63,6 +57,8 @@ async function run() {
 
         res.send(result);
       });
+     
+      
       // Delete item
       app.delete('/product/:id', async (req, res) => {
         const id = req.params.id
