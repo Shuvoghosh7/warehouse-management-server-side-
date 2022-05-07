@@ -1,9 +1,12 @@
 const express = require('express');
+const crypto = require("crypto");
 const cors = require('cors');
+const base64url = require('base64url');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const port = process.env.PORT || 5000;
 const app = express()
+
 
 //meddle ware
 app.use(cors());
@@ -27,7 +30,7 @@ async function run() {
       const products = await cursor.toArray();
       res.send(products);
 
-     
+
       //load single product
       app.get('/product/:id', async (req, res) => {
         const id = req.params.id;
@@ -35,6 +38,12 @@ async function run() {
         const product = await productCollection.findOne(query);
         res.send(product)
       });
+      // jwt 
+      app.post('/login', async (req, res) => {
+        const email = req.body
+        const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET)
+        res.send({ token })
+      })
       // update quantity of products
       app.put("/product/:id", async (req, res) => {
         const id = req.params.id;
@@ -45,7 +54,7 @@ async function run() {
 
         const updateDoc = {
           $set: {
-            quantity: data.addQuantity 
+            quantity: data.addQuantity
           },
         };
 
@@ -57,8 +66,8 @@ async function run() {
 
         res.send(result);
       });
-     
-      
+
+
       // Delete item
       app.delete('/product/:id', async (req, res) => {
         const id = req.params.id
@@ -73,8 +82,8 @@ async function run() {
       const result = await productCollection.insertOne(newService)
       res.send(result)
     })
-      
-     
+
+
 
   }
   finally {
