@@ -21,7 +21,7 @@ async function run() {
   try {
     await client.connect();
     const productCollection = client.db('smartphoneWarehouse').collection('warehouse');
-    const myItemCollection = client.db('smartphoneWarehouse').collection('myItem');
+    const myitemCollection = client.db('smartphoneWarehouse').collection('myItem');
 
     console.log('db connected')
     //load data form database
@@ -31,7 +31,14 @@ async function run() {
       const products = await cursor.toArray();
       res.send(products)
     })
-
+    //my item
+    app.get('/products', async (req, res) => {
+      const email = req.query
+      const query = { email: email };
+      const cursor = productCollection.filter(query);
+      const products = await cursor.toArray();
+      res.send(products)
+    })
 
     //load single product
     app.get('/product/:id', async (req, res) => {
@@ -81,7 +88,6 @@ async function run() {
           quantity: data.quantityReduce
         },
       };
-
       const result = await productCollection.updateOne(
         filter,
         updateDoc,
@@ -90,7 +96,6 @@ async function run() {
 
       res.send(result);
     });
-
 
     // Delete item
     app.delete('/product/:id', async (req, res) => {
@@ -126,10 +131,10 @@ async function run() {
 
       const updateDoc = {
         $set: {
-          price:data.price,
-          quantity:data.quantity,
-          sellStatus:data.sellStatus,
-          supplierName:data.supplierName
+          price: data.price,
+          quantity: data.quantity,
+          sellStatus: data.sellStatus,
+          supplierName: data.supplierName
         },
       };
 
@@ -141,23 +146,6 @@ async function run() {
 
       res.send(result);
     });
-    // My item List
-    app.get('/myitem', async (req, res) => {
-      const tokenAccess = req.headers.authorization;
-      console.log(tokenAccess)
-      const [email, tokeninfo] = tokenAccess.split(" ")
-      const decoded = checkToken(tokeninfo)
-      console.log(decoded)
-      if (email === decoded.email) {
-        const result = await productCollection.find({ email: email }).toArray()
-        res.send(result)
-      }
-      else {
-        res.send({ success: 'UnAuthorization Access' })
-      }
-    })
-
-
 
   }
   finally {
