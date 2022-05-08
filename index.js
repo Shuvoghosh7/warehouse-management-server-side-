@@ -35,7 +35,7 @@ async function run() {
     app.get('/products', async (req, res) => {
       const email = req.query
       const query = { email: email };
-      const cursor = productCollection.filter(query);
+      const cursor = productCollection.find(query);
       const products = await cursor.toArray();
       res.send(products)
     })
