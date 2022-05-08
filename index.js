@@ -29,54 +29,77 @@ async function run() {
       const query = {};
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
-      res.send(products);
-
-
-      //load single product
-      app.get('/product/:id', async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: ObjectId(id) };
-        const product = await productCollection.findOne(query);
-        res.send(product)
-      });
-      // jwt 
-      app.post('/login', async (req, res) => {
-        const email = req.body
-        const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET)
-        res.send({ token })
-      })
-      // update quantity of products
-      app.put("/product/:id", async (req, res) => {
-        const id = req.params.id;
-        const data = req.body;
-        console.log("from update api", data);
-        const filter = { _id: ObjectId(id) };
-        const options = { upsert: true };
-
-        const updateDoc = {
-          $set: {
-            quantity: data.addQuantity
-          },
-        };
-
-        const result = await productCollection.updateOne(
-          filter,
-          updateDoc,
-          options
-        );
-
-        res.send(result);
-      });
-
-
-      // Delete item
-      app.delete('/product/:id', async (req, res) => {
-        const id = req.params.id
-        const query = { _id: ObjectId(id) };
-        const result = await productCollection.deleteOne(query)
-        res.send(result)
-      })
+      res.send(products)
     })
+
+
+    //load single product
+    app.get('/product/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const product = await productCollection.findOne(query);
+      res.send(product)
+    });
+    // jwt 
+    app.post('/login', async (req, res) => {
+      const email = req.body
+      const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET)
+      res.send({ token })
+    })
+    // update quantity of products
+    app.put("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      console.log("from update api", data);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          quantity: data.addQuantity
+        },
+      };
+
+      const result = await productCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+
+      res.send(result);
+    });
+    // Reduce quantity of products
+    app.put("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      console.log("from update api", data);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          quantity: data.quantityReduce
+        },
+      };
+
+      const result = await productCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+
+      res.send(result);
+    });
+
+
+    // Delete item
+    app.delete('/product/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: ObjectId(id) };
+      const result = await productCollection.deleteOne(query)
+      res.send(result)
+    })
+
     // add item api
     app.post('/product', async (req, res) => {
       const newService = req.body
@@ -85,18 +108,55 @@ async function run() {
       const [email, tokeninfo] = tokenAccess.split(" ")
       const decoded = checkToken(tokeninfo)
       console.log(decoded)
-      if (email === decoded.email){
+      if (email === decoded.email) {
         const result = await productCollection.insertOne(newService)
         res.send({ success: 'products upload successfull' })
       }
-      else{
-        res.send({success:'UnAuthorization Access'})
+      else {
+        res.send({ success: 'UnAuthorization Access' })
       }
     })
- // My item 
-    app.post('/myItem',async(req,res)=>{
+    // update Item 
+    app.put("/updateItem/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      console.log("from update api", data);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
 
+      const updateDoc = {
+        $set: {
+          price:data.price,
+          quantity:data.quantity,
+          sellStatus:data.sellStatus,
+          supplierName:data.supplierName
+        },
+      };
+
+      const result = await productCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+
+      res.send(result);
+    });
+    // My item List
+    app.get('/myitem', async (req, res) => {
+      const tokenAccess = req.headers.authorization;
+      console.log(tokenAccess)
+      const [email, tokeninfo] = tokenAccess.split(" ")
+      const decoded = checkToken(tokeninfo)
+      console.log(decoded)
+      if (email === decoded.email) {
+        const result = await productCollection.find({ email: email }).toArray()
+        res.send(result)
+      }
+      else {
+        res.send({ success: 'UnAuthorization Access' })
+      }
     })
+
 
 
   }
@@ -122,15 +182,15 @@ app.listen(port, () => {
 
 function checkToken(token) {
   let email;
-  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-      if (err) {
-          email = 'This email is Invalid email'
-          console.log(email)
-      }
-      if (decoded) {
-          console.log(decoded)
-          email = decoded
-      }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      email = 'This email is Invalid email'
+      console.log(email)
+    }
+    if (decoded) {
+      console.log(decoded)
+      email = decoded
+    }
   });
   return email;
 }
