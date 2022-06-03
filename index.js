@@ -33,7 +33,7 @@ async function run() {
     })
     //my item
     app.get('/products', async (req, res) => {
-      const email = req.query
+      const email = req.query.email
       const query = { email: email };
       const cursor = productCollection.find(query);
       const products = await cursor.toArray();
@@ -60,7 +60,6 @@ async function run() {
       console.log("from update api", data);
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
-
       const updateDoc = {
         $set: {
           quantity: data.addQuantity
